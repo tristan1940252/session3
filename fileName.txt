@@ -1,0 +1,4 @@
+Contenu d'un fichier texte
+afin de tester mon premier atelier
+du cours de Programmation III
+de Techniques de l'Informatiques.
