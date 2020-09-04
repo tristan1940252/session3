@@ -1,4 +1,5 @@
 package com.tristanbrault;
+import javax.print.DocFlavor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -13,6 +14,7 @@ public class Main {
         long stringLength = 4;
         boolean fileExist = true;
         boolean text = false;
+        boolean infos = false;
 
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-f")) {
@@ -29,7 +31,7 @@ public class Main {
 
         }
         if (fileExist){
-            for (int i = 0; i < args.length; i = i +2) {
+            for (int i = 0; i < args.length; i++) {
                 switch (args[i]) {
                     case "-o" -> {
                         if ((Long.parseLong(args[i + 1]) >= 0) && (Long.parseLong(args[i + 1]) < file.length())) {
@@ -50,7 +52,9 @@ public class Main {
                         } catch (Exception e) {
                             stringLength = 4;
                         }
-
+                    }
+                    case "-i" -> {
+                        infos = true;
                     }
 
                 }
@@ -61,8 +65,15 @@ public class Main {
             if (text){
                 printText(file,offset,length,stringLength);
             }
-            else
+//            else  if (infos){
+//                printInfos(file);
+//            }
+            else{
                 printData(file, offset, length);
+            }
+            if (infos){
+                printInfos(file);
+            }
         }
 
     }
@@ -79,7 +90,7 @@ public class Main {
                 int chiffre = file.read();
                 if(chiffre > 0 && index < (offset + length)){
                     if(index >= offset){
-                        if(chiffre != 10 && chiffre != 13){
+                        if(chiffre > 17){
                             System.out.print("\u001B[36m"  + Integer.toHexString(chiffre) + " ");
                             texte.append((char) chiffre);
                         }
@@ -106,10 +117,11 @@ public class Main {
     }
 
     public static void printUsage(){
+        System.out.println("-f est le nom du fichier à lire (obligatoire)");
         System.out.println("-o est la position de départ (facultatif)");
         System.out.println("-l est le nombre de caractère à observer (facultatif)");
-        System.out.println("-f est le nom du fichier à lire (obligatoire)");
-        System.out.println("-s est tranforme l'hexadecimal en chaine de charactère");
+        System.out.println("-s est tranforme l'hexadecimal en chaine de charactère, mettre un chiffre pour spécifier la taille minimum des chaines (faculatitf)");
+        System.out.println("-i donne des informations sur le fichier (facultatif)");
 
     }
 
@@ -127,7 +139,6 @@ public class Main {
 //                System.out.print("\u001B[33m" + Long.toHexString(chiffre) + " ");
                 if (chiffre == 0 && chaine.length() >= min){
                     System.out.println(chaine);
-
                 }
                 chaine = "";
             }
@@ -136,10 +147,51 @@ public class Main {
     }
 
     public static void printInfos(RandomAccessFile file) throws IOException{
-        String signature = "PE\0\0";
-        for(int i = 0; i < file.length(); i++){
+        //int[] signature = {80,69,0,0};
+        int[] signature = {69,76,70};
+        //Adresse OS
+        //Adresse Processeur
+        //Signature Processeur
+        int response = 0;
+        byte count = 0;
+        int i = 0;
+        String cpu = "";
+        String os = "";
 
+    while(os.equals("")){
+        file.seek(i);
+        int value = file.read();
+        if (value == signature[count]){
+            if (count == signature.length - 1){
+                response = i;
+                os = "OS: Windows";
+                count--;
+            }
+            count++;
         }
+        else{
+            count = 0;
+        }
+
+        if (!os.equals("")){
+            System.out.println("\u001B[52m" + response);
+            for (int j = 12; j > 10; j--){
+                file.seek(response + j);
+                cpu += Integer.toHexString(file.read());
+            }
+            cpu = switch (cpu) {
+                case "8664" -> "Machine: x64";
+                case "aa64" -> "Machine: ARM64";
+                case "3e" -> "AMD64";
+                case "b7" -> "ARM64";
+                default -> cpu;
+            };
+        }
+        i++;
+    }
+
+        System.out.println(os);
+        System.out.println(cpu);
     }
 
 
