@@ -4,7 +4,29 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+
+
 public class Main {
+
+    public static final int[] SIGNATURE_WINDOWS = {0x50,0x45,0x00,0x00};
+    public static final int CPU_OFFSET_WINDOWS = 1;
+    public static final int CPU_LENGTH_WINDOWS = 2;
+    public static final String CPU_X64_WINDOWS = "8664";
+    public static final String CPU_ARM64_WINDOWS = "aa64";
+
+    public static final int[] SIGNATURE_MAC = {0xcf,0xfa,0xed,0xfe};
+    public static final int CPU_OFFSET_MAC = 1;
+    public static final int CPU_LENGTH_MAC = 1;
+    public static final int CPU_X64_MAC = 0x07;
+    public static final int CPU_ARM64_MAC = 0x12;
+
+    public static final int[] SIGNATURE_LINUX = {0x7f,0x45,0x4c,0x46};
+    public static final int CPU_OFFSET_LINUX = 15;
+    public static final int CPU_LENGTH_LINUX = 1;
+    public static final String CPU_X64_LINUX = "3e";
+    public static final String CPU_ARM64_LINUX = "b7";
+
+    public static final int[][] ARRAY_SIGNATURE = {SIGNATURE_WINDOWS,SIGNATURE_MAC,SIGNATURE_LINUX};
 
     public static void main(String[] args) throws IOException {
         RandomAccessFile file = null;
@@ -65,15 +87,15 @@ public class Main {
             if (text){
                 printText(file,offset,length,stringLength);
             }
-//            else  if (infos){
-//                printInfos(file);
-//            }
+            else  if (infos){
+                printInfos(file);
+            }
             else{
                 printData(file, offset, length);
             }
-            if (infos){
-                printInfos(file);
-            }
+//            if (infos){
+//                printInfos(file);
+//            }
         }
 
     }
@@ -146,9 +168,18 @@ public class Main {
         System.out.println();
     }
 
+    //https://docs.microsoft.com/fr-ca/windows/win32/debug/pe-format?redirectedfrom=MSDN#machine-types
+
+    //https://en.wikipedia.org/wiki/Executable_and_Linkable_Format#File_header
+
+    //https://opensource.apple.com/source/xnu/xnu-792.13.8/osfmk/mach/machine.h
+
+    //https://stackoverflow.com/questions/27669766/how-to-read-mach-o-header-from-object-file
     public static void printInfos(RandomAccessFile file) throws IOException{
-        //int[] signature = {80,69,0,0};
-        int[] signature = {69,76,70};
+        int index = 0;
+        int[] signature = ARRAY_SIGNATURE[index];
+        int off = 0;
+        int length = 0;
         //Adresse OS
         //Adresse Processeur
         //Signature Processeur
@@ -158,40 +189,64 @@ public class Main {
         String cpu = "";
         String os = "";
 
-    while(os.equals("")){
-        file.seek(i);
-        int value = file.read();
-        if (value == signature[count]){
-            if (count == signature.length - 1){
-                response = i;
-                os = "OS: Windows";
-                count--;
-            }
-            count++;
-        }
-        else{
-            count = 0;
-        }
 
-        if (!os.equals("")){
-            System.out.println("\u001B[52m" + response);
-            for (int j = 12; j > 10; j--){
-                file.seek(response + j);
-                cpu += Integer.toHexString(file.read());
+        while(os.equals("")){
+            file.seek(i);
+            int value = file.read();
+            if (value == signature[count]){
+                if (count == signature.length - 1){
+                    response = i;
+                    if(signature == SIGNATURE_WINDOWS){
+                        os = "Windows";
+                        off = CPU_OFFSET_WINDOWS;
+                        length = CPU_LENGTH_WINDOWS;
+                    }
+                    else if(signature == SIGNATURE_MAC){
+                        os = "Mac";
+                        off = CPU_OFFSET_MAC;
+                        length = CPU_LENGTH_MAC;
+                    }
+                    else if (signature == SIGNATURE_LINUX){
+                        os = "Linux";
+                        off = CPU_OFFSET_LINUX;
+                        length = CPU_LENGTH_LINUX;
+                    }
+                    else{
+                        System.out.println("Pas trouver");}
+                    count--;
+                }
+                count++;
             }
-            cpu = switch (cpu) {
-                case "8664" -> "Machine: x64";
-                case "aa64" -> "Machine: ARM64";
-                case "3e" -> "AMD64";
-                case "b7" -> "ARM64";
-                default -> cpu;
-            };
-        }
-        i++;
-    }
+            else{
+                count = 0;
+            }
 
-        System.out.println(os);
-        System.out.println(cpu);
+            try{
+                if (value == -1){
+                    signature = ARRAY_SIGNATURE[index++];
+                    i=-1;
+                }
+            }catch (IndexOutOfBoundsException e){
+                index--;
+            }
+
+            //trouver l'architecture
+            if (!os.equals("")){
+                //System.out.println("\u001B[52m" + response);
+                for (int offset = off ; offset < (off + length); offset++){
+                    file.seek(response + offset);
+                    cpu += Integer.toHexString(file.read());
+                }
+                cpu = switch (cpu) {
+                    case "6486", "3e", "7" -> "AMD64";
+                    case "64aa", "b7", "12" -> "ARM64";
+                    default -> cpu;
+                };
+            }
+            i++;
+        }
+        System.out.println("OS: " + os);
+        System.out.println("Machine: " + cpu);
     }
 
 
