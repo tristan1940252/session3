@@ -1,0 +1,16 @@
+﻿  main.cpp
+E:\Users\Tristan\Documents\Code\source\tp2\tp2\Huffman.h(215,12): warning C4244: 'initialisation' : conversion de 'double' en 'int', perte possible de données
+E:\Users\Tristan\Documents\Code\source\tp2\tp2\Huffman.h(186,8): warning C4101: 'file' : variable locale non référencée
+E:\Users\Tristan\Documents\Code\source\tp2\tp2\Queue.h(55,2): warning C4018: '<' : incompatibilité signed/unsigned
+E:\Users\Tristan\Documents\Code\source\tp2\tp2\Queue.h(52): message : pendant la compilation de la fonction membre classe modèle 'T Queue<T>::get(size_t)'
+          with
+          [
+              T=HuffmanCode *
+          ]
+E:\Users\Tristan\Documents\Code\source\tp2\tp2\Huffman.h(68): message : voir la référence à l'instanciation de la fonction modèle 'T Queue<T>::get(size_t)' en cours de compilation
+          with
+          [
+              T=HuffmanCode *
+          ]
+E:\Users\Tristan\Documents\Code\source\tp2\tp2\Huffman.h(17): message : voir la référence à l'instanciation classe modèle 'Queue<HuffmanCode *>' en cours de compilation
+  tp2.vcxproj -> E:\Users\Tristan\Documents\Code\source\tp2\Debug\tp2.exe

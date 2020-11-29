@@ -1,0 +1,4 @@
+﻿  main.cpp
+E:\Users\Tristan\Documents\Code\source\tp2\tp2\Huffman.h(165,12): warning C4244: 'initialisation' : conversion de 'double' en 'int', perte possible de données
+E:\Users\Tristan\Documents\Code\source\tp2\tp2\Huffman.h(201,24): warning C4018: '<=' : incompatibilité signed/unsigned
+  tp2.vcxproj -> E:\Users\Tristan\Documents\Code\source\tp2\x64\Debug\tp2.exe
